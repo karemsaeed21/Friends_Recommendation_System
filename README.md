@@ -1,7 +1,7 @@
 # Friends_Recommendation_System
 
 # downlaod dependinces 
-pip install tkinter
+<p>pip install tkinter</p>
 pip install networkx
 pip install matplotlib
 pip install sklearn
