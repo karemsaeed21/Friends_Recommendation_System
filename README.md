@@ -2,8 +2,9 @@
 
 # downlaod dependinces 
 <p>pip install tkinter</p>
-pip install networkx
-pip install matplotlib
-pip install sklearn
-pip install numpy
-pip install pandas
+<p>pip install networkx</p>
+<p>pip install matplotlib</p>
+<p>pip install sklearn</p> 
+<p>pip install numpy</p> 
+<p>pip install pandas</p> 
+
