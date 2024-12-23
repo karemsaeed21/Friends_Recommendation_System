@@ -40,7 +40,7 @@ if __name__ == "__main__":
     social_network = create_social_network(user_profiles)
     # Initialize the machine learning model
     ml_model = MLModel(user_profiles)
-    ml_model.train_model(classifier_type='random_forest')  # Choose the classifier type
+    ml_model.train_model(classifier_type='knn')  # Choose the classifier type
     # Initialize the friend recommendation system
     friend_recommendation = FriendRecommendation(social_network, user_profiles, ml_model)
     # Initialize and run the GUI application

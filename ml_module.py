@@ -13,56 +13,50 @@ class MLModel:
         self.model = None
         self.scaler = StandardScaler()
 
-    def calculate_profile_similarity(self, user, neighbor):
+    def calculate_similarity(self, user, neighbor):
         user_profile = self.user_profiles[user]
         neighbor_profile = self.user_profiles[neighbor]
-        
+
+        # Calculate mutual friends
+        user_friends = set(user_profile['friends'])
+        neighbor_friends = set(neighbor_profile['friends'])
+        mutual_friends = len(user_friends.intersection(neighbor_friends))
+
+        # Calculate shared interests
+        user_interests = set(user_profile['interests'])
+        neighbor_interests = set(neighbor_profile['interests'])
+        shared_interests = len(user_interests.intersection(neighbor_interests))
+
+        # Calculate age similarity
         age_similarity = 1 - abs(user_profile['age'] - neighbor_profile['age']) / 100
-        location_similarity = 1 if user_profile['location'] == neighbor_profile['location'] else 0
+
+        # Calculate activity similarity
+        user_activities = set(user_profile['activities'].split(', '))
+        neighbor_activities = set(neighbor_profile['activities'].split(', '))
+        activity_similarity = len(user_activities.intersection(neighbor_activities)) / len(user_activities.union(neighbor_activities)) if user_activities.union(neighbor_activities) else 0
+
+        # Calculate occupation similarity
         occupation_similarity = 1 if user_profile['occupation'] == neighbor_profile['occupation'] else 0
-        
-        return age_similarity + location_similarity + occupation_similarity
 
-    def calculate_activity_similarity(self, user, neighbor):
-        user_activities = set(self.user_profiles[user]['activities'].split(', '))
-        neighbor_activities = set(self.user_profiles[neighbor]['activities'].split(', '))
-        intersection = user_activities.intersection(neighbor_activities)
-        union = user_activities.union(neighbor_activities)
-        return len(intersection) / len(union) if union else 0
+        # Calculate location similarity
+        location_similarity = 1 if user_profile['location'] == neighbor_profile['location'] else 0
 
+        return mutual_friends, shared_interests, age_similarity, activity_similarity, occupation_similarity, location_similarity
     def train_model(self, classifier_type='logistic'):
         X = []
         y = []
         
         for user, profile in self.user_profiles.items():
-            user_interests = set(profile['interests'])
-            user_friends = set(profile['friends'])
             for friend in profile['friends']:
-                friend_interests = set(self.user_profiles[friend]['interests'])
-                friend_friends = set(self.user_profiles[friend]['friends'])
-                
-                shared_interests = len(user_interests.intersection(friend_interests))
-                total_interests = len(user_interests.union(friend_interests))
-                common_friends = len(user_friends.intersection(friend_friends))
-                profile_similarity = self.calculate_profile_similarity(user, friend)
-                activity_similarity = self.calculate_activity_similarity(user, friend)
-                
-                X.append([shared_interests, total_interests, common_friends, profile_similarity, activity_similarity])
+                similarities = self.calculate_similarity(user, friend)
+                X.append(similarities)
                 y.append(1)  # They are friends
 
                 # Generate negative samples (non-friends)
                 for non_friend in self.user_profiles:
                     if non_friend != user and non_friend not in profile['friends']:
-                        non_friend_interests = set(self.user_profiles[non_friend]['interests'])
-                        non_friend_friends = set(self.user_profiles[non_friend]['friends'])
-                        
-                        shared_interests = len(user_interests.intersection(non_friend_interests))
-                        total_interests = len(user_interests.union(non_friend_interests))
-                        common_friends = len(user_friends.intersection(non_friend_friends))
-                        profile_similarity = self.calculate_profile_similarity(user, non_friend)
-                        activity_similarity = self.calculate_activity_similarity(user, non_friend)
-                        
-                        X.append([shared_interests, total_interests, common_friends, profile_similarity, activity_similarity])
+                        similarities = self.calculate_similarity(user, non_friend)
+                        X.append(similarities)
                         y.append(0)  # They are not friends
 
         X = np.array(X)
@@ -78,13 +72,13 @@ class MLModel:
 
         # Choose classifier type
         if classifier_type == 'logistic':
-            self.model = LogisticRegression()
+            self.model = LogisticRegression(random_state=42)
         elif classifier_type == 'decision_tree':
-            self.model = DecisionTreeClassifier()
+            self.model = DecisionTreeClassifier(random_state=42)
         elif classifier_type == 'random_forest':
-            self.model = RandomForestClassifier()
+            self.model = RandomForestClassifier(random_state=42)
         elif classifier_type == 'svm':
-            self.model = SVC(probability=True)
+            self.model = SVC(probability=True, random_state=42)
         elif classifier_type == 'knn':
             self.model = KNeighborsClassifier(n_neighbors=3)
         
@@ -98,18 +92,16 @@ class MLModel:
         print("Test accuracy:", test_accuracy)
 
     def predict_friendship(self, user, neighbor):
-        user_interests = set(self.user_profiles[user]['interests'])
-        neighbor_interests = set(self.user_profiles[neighbor]['interests'])
-        user_friends = set(self.user_profiles[user]['friends'])
-        neighbor_friends = set(self.user_profiles[neighbor]['friends'])
-        
-        shared_interests = len(user_interests.intersection(neighbor_interests))
-        total_interests = len(user_interests.union(neighbor_interests))
-        common_friends = len(user_friends.intersection(neighbor_friends))
-        profile_similarity = self.calculate_profile_similarity(user, neighbor)
-        activity_similarity = self.calculate_activity_similarity(user, neighbor)
-        
-        features = np.array([[shared_interests, total_interests, common_friends, profile_similarity, activity_similarity]])
+        similarities = self.calculate_similarity(user, neighbor)
+        features = np.array([similarities])
         features = self.scaler.transform(features)
         
-        return self.model.predict_proba(features)[0, 1]
+        proba = 0
+        count = 0
+        for similarity in similarities:
+            if similarity > 1:
+                proba += 1
+            else :
+                proba += similarity
+        proba = proba / len(similarities) * 100
+        return proba, similarities

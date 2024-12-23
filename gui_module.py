@@ -393,11 +393,3 @@ class FriendRecommendationApp:
                 self.update_graph()
         except ValueError:
             self.node_size_var.set("2000")
-
-    def calculate_similarity(self, user, neighbor):
-        user_interests = set(self.user_profiles[user]['interests'])
-        neighbor_interests = set(self.user_profiles[neighbor]['interests'])
-        intersection = user_interests.intersection(neighbor_interests)
-        union = user_interests.union(neighbor_interests)
-        similarity = len(intersection) / len(union) if union else 0
-        return similarity

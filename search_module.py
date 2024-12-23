@@ -1,3 +1,5 @@
+import networkx as nx
+
 class FriendRecommendation:
     def __init__(self, social_network, user_profiles, ml_model):
         self.social_network = social_network
@@ -13,12 +15,22 @@ class FriendRecommendation:
             current, depth = queue.pop(0)
             if current in visited:
                 continue
+
             visited.add(current)
 
             for neighbor in self.social_network.neighbors(current):
+                # If depth is 0, we move one level deeperx
                 if depth == 0:
                     queue.append((neighbor, depth + 1))
-                elif depth == 1 and neighbor != user and neighbor not in self.social_network.neighbors(user):
-                    recommendations[neighbor] = self.ml_model.predict_friendship(user, neighbor)
+                # If depth is 1, neighbor is two hops away
+                elif depth == 1:
+                    if neighbor != user and neighbor not in self.social_network.neighbors(user):
+                        probability, similarities = self.ml_model.predict_friendship(user, neighbor)
+                        recommendations[neighbor] = (probability, similarities)
 
-        return sorted(recommendations.items(), key=lambda x: -x[1])
+        # Debug-print to see each neighbor's probability and similarities
+        for name, (prob, sims) in recommendations.items():
+            print(f"Neighbor: {name},prop: {prob}, Similarities: {sims}")
+
+        # Sort by probability descending
+        return sorted(recommendations.items(), key=lambda x: -x[1][0])
