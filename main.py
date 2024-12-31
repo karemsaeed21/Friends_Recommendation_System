@@ -24,7 +24,7 @@ def load_user_profiles(filename):
                 'location': location,
                 'occupation': occupation,
                 'activities': activities
-            }
+            } # Add the user profile to the dictionary with the name as the key for easy access
     return user_profiles
 def create_social_network(user_profiles):
     social_network = nx.Graph()
@@ -35,7 +35,7 @@ def create_social_network(user_profiles):
 
 if __name__ == "__main__":
     # Load user profiles from CSV
-    user_profiles = load_user_profiles('project1/user_profiles.csv')
+    user_profiles = load_user_profiles('/Users/karem/Documents/GitHub/Friends_Recommendation_System/user_profiles.csv')
     # Create the social network graph
     social_network = create_social_network(user_profiles)
     # Initialize the machine learning model

@@ -61,7 +61,22 @@ class MLModel:
 
         X = np.array(X)
         y = np.array(y)
-        
+        # X = [
+        # # Each row represents a user pair (user1, user2)
+        #     [
+        #         mutual_friends_count,      # Number of mutual friends
+        #         interaction_score,         # Like/comment frequency
+        #         profile_similarity,        # Based on interests/demographics
+        #         connection_age,           # How long they've known each other
+        #         communication_frequency,   # Message frequency
+        #         group_overlap,            # Shared groups/communities
+        #         geographic_distance       # Physical location proximity
+        #     ]
+        # ]
+        # y = [
+        #     1,  # Connected/Friends
+        #     0   # Not Connected
+        # ]
         # Split the data into training and testing sets
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 

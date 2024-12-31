@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, colorchooser
 import networkx as nx
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -11,6 +11,14 @@ class FriendRecommendationApp:
         self.root = root
         self.ml_model = ml_model
         self.friend_recommendation = friend_recommendation
+        
+        # Add color variables
+        self.node_color = tk.StringVar(value='#ADD8E6')
+        self.edge_color = tk.StringVar(value='#666666')
+        
+        # Add menu bar before other UI elements
+        self.create_menu_bar()
+        
         self.root.title("Social Network Friend Recommendation System")
         self.root.geometry("1500x900")
         self.root.configure(bg='#f0f0f0')
@@ -27,6 +35,52 @@ class FriendRecommendationApp:
         self.create_gui()
         self.update_graph()
         
+    def create_menu_bar(self):
+        menubar = tk.Menu(self.root)
+        self.root.config(menu=menubar)
+        
+        # File Menu
+        file_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="File", menu=file_menu)
+        file_menu.add_command(label="Exit", command=self.root.quit)
+        
+        # View Menu
+        view_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="View", menu=view_menu)
+        view_menu.add_command(label="Node Color", command=self.change_node_color)
+        view_menu.add_command(label="Edge Color", command=self.change_edge_color)
+        
+        # Help Menu
+        help_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Help", menu=help_menu)
+        help_menu.add_command(label="User Guide", command=self.show_user_guide)
+        help_menu.add_command(label="About", command=self.show_about)
+
+    def change_node_color(self):
+        color = colorchooser.askcolor(color=self.node_color.get())[1]
+        if color:
+            self.node_color.set(color)
+            self.update_graph()
+
+    def change_edge_color(self):
+        color = colorchooser.askcolor(color=self.edge_color.get())[1]
+        if color:
+            self.edge_color.set(color)
+            self.update_graph()
+
+    def show_user_guide(self):
+        messagebox.showinfo("User Guide",
+            "1. Enter a username in the search box\n"
+            "2. Click 'Find Recommendations' to get friend suggestions\n"
+            "3. Use graph controls to adjust the visualization\n"
+            "4. Change colors and layouts from the View menu")
+
+    def show_about(self):
+        messagebox.showinfo("About",
+            "Social Network Friend Recommendation System\n"
+            "Version 5.1\n"
+            "Developed by *ASTERISK")
+
     def setup_styles(self):
         # Configure ttk styles
         style = ttk.Style()
@@ -224,6 +278,24 @@ class FriendRecommendationApp:
             command=lambda: self.adjust_node_size(-100)
         ).pack(side="left", padx=3)
         
+        # Layout selection
+        ttk.Label(
+            controls_frame,
+            text="Layout:",
+            style='Normal.TLabel'
+        ).pack(side="left", padx=5)
+        
+        self.layout_var = tk.StringVar(value="spring")
+        layout_combo = ttk.Combobox(
+            controls_frame,
+            textvariable=self.layout_var,
+            values=["spring", "circular", "random", "shell"],
+            width=10,
+            state="readonly"
+        )
+        layout_combo.pack(side="left", padx=5)
+        layout_combo.bind('<<ComboboxSelected>>', self.update_graph)
+        
         # Refresh button
         ttk.Button(
             controls_frame,
@@ -277,19 +349,29 @@ class FriendRecommendationApp:
             
             node_size = float(self.node_size_var.get())
                 
+            # Get selected layout
+            layout_type = self.layout_var.get()
+            if layout_type == "spring":
+                pos = nx.spring_layout(self.friend_recommendation.social_network, k=1.5, iterations=50)
+            elif layout_type == "circular":
+                pos = nx.circular_layout(self.friend_recommendation.social_network)
+            elif layout_type == "random":
+                pos = nx.random_layout(self.friend_recommendation.social_network)
+            elif layout_type == "shell":
+                pos = nx.shell_layout(self.friend_recommendation.social_network)
+                
             # Create new graph with current size
             fig, ax = plt.subplots(figsize=(8 * zoom, 6 * zoom))
-            pos = nx.spring_layout(self.friend_recommendation.social_network, k=1.5, iterations=50)
             
             nx.draw(
                 self.friend_recommendation.social_network,
                 pos,
                 with_labels=True,
-                node_color='#ADD8E6',
+                node_color=self.node_color.get(),
                 node_size=node_size * zoom,  # Use node_size variable
                 font_size=8 * zoom,
                 font_weight='bold',
-                edge_color='#666666',
+                edge_color=self.edge_color.get(),
                 width=1.5,
                 ax=ax
             )

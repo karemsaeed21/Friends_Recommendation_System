@@ -7,9 +7,9 @@ class FriendRecommendation:
         self.ml_model = ml_model
 
     def find_recommendations(self, user):
-        visited = set()
-        queue = [(user, 0)]
-        recommendations = {}
+        visited = set() # Keep track of visited nodes
+        queue = [(user, 0)] # Start with the user at depth 0
+        recommendations = {} # Store recommendations with probability and similarities
 
         while queue:
             current, depth = queue.pop(0)
@@ -27,10 +27,8 @@ class FriendRecommendation:
                     if neighbor != user and neighbor not in self.social_network.neighbors(user):
                         probability, similarities = self.ml_model.predict_friendship(user, neighbor)
                         recommendations[neighbor] = (probability, similarities)
-
         # Debug-print to see each neighbor's probability and similarities
         for name, (prob, sims) in recommendations.items():
             print(f"Neighbor: {name},prop: {prob}, Similarities: {sims}")
-
         # Sort by probability descending
         return sorted(recommendations.items(), key=lambda x: -x[1][0])
