@@ -16,7 +16,7 @@ class FriendRecommendation:
             if current in visited:
                 continue
 
-            visited.add(current)
+            visited.add(current) 
 
             for neighbor in self.social_network.neighbors(current):
                 # If depth is 0, we move one level deeperx
