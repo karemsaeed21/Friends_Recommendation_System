@@ -3,6 +3,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
+from sklearn.neural_network import MLPClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -96,6 +97,8 @@ class MLModel:
             self.model = SVC(probability=True, random_state=42)
         elif classifier_type == 'knn':
             self.model = KNeighborsClassifier(n_neighbors=3)
+        elif classifier_type == 'neural_network':
+            self.model = MLPClassifier(hidden_layer_sizes=(10,), max_iter=1000, random_state=42)
         
         # Train the model
         self.model.fit(X_train, y_train)
