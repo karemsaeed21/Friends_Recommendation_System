@@ -15,6 +15,8 @@ User Data Integration: Leverages a dataset (user_profiles.csv) to analyze and pe
 This project showcases the integration of data science, search algorithms, 
 and interface design to create a practical and engaging recommendation system.</pre>
 
+<p>The project contains a .venv virtual environment with all the dependencies you can activate directly.</p>
+
 # Install dependencies 
 <p>pip install networkx</p>
 <p>pip install matplotlib</p>
